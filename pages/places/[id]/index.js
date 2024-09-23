@@ -38,8 +38,6 @@ export default function DetailsPage() {
   if (!isReady || isLoading || error) return <h2>Loading...</h2>;
   const { place, comments } = data;
 
-  console.log(comments);
-
   async function deletePlace() {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this place?"
