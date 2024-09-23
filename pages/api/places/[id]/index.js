@@ -1,6 +1,6 @@
 import dbConnect from "../../../../db/connect";
 import Place from "../../../../db/models/Place";
-// import { db_comments } from "../../../../lib/db_comments";
+import Comment from "../../../../db/models/Comment";
 
 export default async function handler(request, response) {
   const { id } = request.query;
@@ -13,7 +13,10 @@ export default async function handler(request, response) {
       if (!placeDetail) {
         return response.status(404).json({ status: "Not Found" });
       }
-      return response.status(200).json(placeDetail);
+      const comments = await Comment.find({
+        _id: { $in: placeDetail.comments },
+      });
+      return response.status(200).json(placeDetail, comments);
     }
     if (request.method === "PATCH") {
       await Place.findByIdAndUpdate(id, {
@@ -27,20 +30,28 @@ export default async function handler(request, response) {
         .status(200)
         .json({ status: `Place ${id} successfully deleted.` });
     }
+    if (request.method === "POST") {
+      const newComment = await Comment.create(request.body);
 
-    // const place = Place.find((place) => place._id.$oid === id);
-    // const comment = place?.comments;
-    // const allCommentIds = comment?.map((comment) => comment.$oid) || [];
-    // const comments = db_comments.filter((comment) =>
-    //   allCommentIds.includes(comment._id.$oid)
-    // );
+      const updatedPlaceWithComment = await Place.findByIdAndUpdate(
+        id,
+        { $push: { comments: newComment._id } },
+        { new: true }
+      );
 
-    //   if (!place) {
-    //     return response.status(404).json({ status: "Not found" });
-    //   }
+      if (!updatedPlaceWithComment) {
+        return response.status(404).json({ status: "Place not found" });
+      }
 
-    //   response.status(200).json({ place: place, comments: comments });
-  } catch (e) {
-    console.log(e);
+      return response.status(200).json({
+        message: "Comment added successfully.",
+        place: updatedPlaceWithComment,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return response
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
   }
 }

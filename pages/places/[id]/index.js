@@ -34,9 +34,12 @@ export default function DetailsPage() {
   const { isReady } = router;
   const { id } = router.query;
   const { data: place, isLoading, error } = useSWR(`/api/places/${id}`);
-  const comments = [];
 
   if (!isReady || isLoading || error) return <h2>Loading...</h2>;
+
+  const comments = place.comments;
+
+  console.log(comments);
 
   async function deletePlace() {
     const confirmDelete = window.confirm(
