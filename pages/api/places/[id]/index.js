@@ -10,11 +10,22 @@ export default async function handler(request, response) {
     if (request.method === "GET") {
       const placeDetail = await Place.findById(id);
       console.log("placeDetail", placeDetail);
-
       if (!placeDetail) {
         return response.status(404).json({ status: "Not Found" });
       }
       return response.status(200).json(placeDetail);
+    }
+    if (request.method === "PATCH") {
+      await Place.findByIdAndUpdate(id, {
+        $set: request.body,
+      });
+      response.status(200).json({ status: `Place ${id} updated!` });
+    }
+    if (request.method === "DELETE") {
+      await Place.findByIdAndDelete(id);
+      response
+        .status(200)
+        .json({ status: `Place ${id} successfully deleted.` });
     }
 
     // const place = Place.find((place) => place._id.$oid === id);
