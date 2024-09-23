@@ -55,7 +55,11 @@ export default function Comments({ locationName }) {
       </FormContainer>
       {comments && comments.length > 0 ? (
         <>
-          <h1> {comments.length} fans commented on this place:</h1>
+          <h1>
+            {`${comments.length} fan${
+              comments.length === 1 ? "" : "s"
+            } commented on this place:`}
+          </h1>
           {comments.map(({ _id, name, comment }) => (
             <div key={_id}>
               <p>

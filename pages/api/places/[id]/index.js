@@ -9,15 +9,21 @@ export default async function handler(request, response) {
     await dbConnect();
     if (request.method === "GET") {
       const placeDetail = await Place.findById(id);
-      console.log("placeDetail", placeDetail);
+      // console.log("placeDetail", placeDetail);
       if (!placeDetail) {
         return response.status(404).json({ status: "Not Found" });
       }
       const comments = await Comment.find({
         _id: { $in: placeDetail.comments },
       });
-      return response.status(200).json(placeDetail, comments);
+      console.log("comments", comments);
+
+      return response.status(200).json({ place: placeDetail, comments });
     }
+
+    //   return response.status(200).json({ place: placeDetail, comments });
+    // }
+
     if (request.method === "PATCH") {
       await Place.findByIdAndUpdate(id, {
         $set: request.body,
