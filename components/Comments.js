@@ -1,8 +1,14 @@
 import styled from "styled-components";
 import { FormContainer, Input, Label } from "./Form";
 import { StyledButton } from "./StyledButton.js";
+import { useRouter } from "next/router.js";
+import useSWR from "swr";
 
-export default function Comments({ locationName, comments }) {
+export default function Comments({ locationName }) {
+  const router = useRouter();
+  const { id } = router.query;
+  const { data, mutate } = useSWR(`/api/places/${id}`);
+
   const Article = styled.article`
     display: flex;
     flex-direction: column;
@@ -17,9 +23,26 @@ export default function Comments({ locationName, comments }) {
     }
   `;
 
-  function handleSubmitComment(e) {
+  async function handleSubmitComment(e) {
     e.preventDefault();
+    const formData = new FormData(e.target);
+    const commentData = Object.fromEntries(formData);
+    const response = await fetch(`/api/places/${id}`, {
+      method: "POST",
+      body: JSON.stringify(commentData),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.ok) {
+      await response.json();
+      mutate();
+      e.target.reset();
+    } else {
+      console.error(`Error: ${response.status}`);
+    }
   }
+  const comments = data?.comments;
 
   return (
     <Article>
@@ -30,22 +53,24 @@ export default function Comments({ locationName, comments }) {
         <Input type="text" name="comment" placeholder="comment here..." />
         <StyledButton type="submit">Send</StyledButton>
       </FormContainer>
-      {comments && (
+      {comments && comments.length > 0 ? (
         <>
-          <h1> {comments.length} fans commented on this place:</h1>
-          {comments.map(({ name, comment }, idx) => {
-            return (
-              <>
-                <p key={idx}>
-                  <small>
-                    <strong>{name}</strong> commented on {locationName}
-                  </small>
-                </p>
-                <span>{comment}</span>
-              </>
-            );
-          })}
+          <h1>
+            {`${comments.length} fan${
+              comments.length === 1 ? "" : "s"
+            } commented on this place:`}
+          </h1>
+          {comments.map(({ _id, name, comment }) => (
+            <div key={_id}>
+              <p>
+                <strong>{name}</strong> commented on {locationName}
+              </p>
+              <span>{comment}</span>
+            </div>
+          ))}
         </>
+      ) : (
+        <p>No comments yet. Be the first to comment!</p>
       )}
     </Article>
   );
