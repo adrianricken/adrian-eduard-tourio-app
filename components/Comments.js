@@ -5,10 +5,6 @@ import { useRouter } from "next/router.js";
 import useSWR from "swr";
 
 export default function Comments({ locationName }) {
-  const router = useRouter();
-  const { id } = router.query;
-  const { data, mutate } = useSWR(`/api/places/${id}`);
-
   const Article = styled.article`
     display: flex;
     flex-direction: column;
@@ -22,6 +18,9 @@ export default function Comments({ locationName }) {
       padding: 20px;
     }
   `;
+  const router = useRouter();
+  const { id } = router.query;
+  const { data, mutate } = useSWR(`/api/places/${id}`);
 
   async function handleSubmitComment(e) {
     e.preventDefault();
@@ -43,6 +42,27 @@ export default function Comments({ locationName }) {
     }
   }
   const comments = data?.comments;
+
+  async function handleDeleteComment(commentId) {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this comment?"
+    );
+    if (confirmDelete) {
+      const response = await fetch(`/api/places/${id}`, {
+        method: "DELETE",
+        body: JSON.stringify({ commentId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        mutate();
+      } else {
+        console.error("Failed to delete comment");
+      }
+    }
+  }
 
   return (
     <Article>
@@ -66,6 +86,8 @@ export default function Comments({ locationName }) {
                 <strong>{name}</strong> commented on {locationName}
               </p>
               <span>{comment}</span>
+              <br />
+              <button onClick={() => handleDeleteComment(_id)}>❌</button>
             </div>
           ))}
         </>
