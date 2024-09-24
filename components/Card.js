@@ -3,8 +3,6 @@ import styled from "styled-components";
 import { StyledImage } from "./StyledImage.js";
 
 const Article = styled.article`
-  border: 1px solid black;
-  border-radius: 0.8rem;
   padding: 1rem;
 `;
 
@@ -56,6 +54,7 @@ export default function Card({ name, image, location, id }) {
             alt=""
           />
         </ImageContainer>
+        <br />
         <figcaption>{name}</figcaption>
       </Figure>
       <p>Location: {location}</p>
